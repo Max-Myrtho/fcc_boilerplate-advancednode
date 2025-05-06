@@ -2,10 +2,20 @@ require("dotenv").config();
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const { ObjectID } = require("mongodb");
+const LocalStrategy = require("passport-local");
+const GitHubStrategy = require("passport-github").Strategy;
 
 module.exports = function (app, myDataBase) {
-  const LocalStrategy = require("passport-local");
-  const GitHubStrategy = require("passport-github").Strategy;
+  // Serialization and deserialization here...
+  passport.serializeUser((user, done) => {
+    done(null, user._id);
+  });
+
+  passport.deserializeUser((id, done) => {
+    myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
+      done(null, doc);
+    });
+  });
 
   passport.use(
     new LocalStrategy((username, password, done) => {
@@ -18,7 +28,7 @@ module.exports = function (app, myDataBase) {
         }
         return done(null, user);
       });
-    }),
+    })
   );
 
   passport.use(
@@ -55,20 +65,9 @@ module.exports = function (app, myDataBase) {
           { upsert: true, new: true },
           (err, doc) => {
             return cb(null, doc.value);
-          },
+          }
         );
-      },
-    ),
+      }
+    )
   );
-
-  // Serialization and deserialization here...
-  passport.serializeUser((user, done) => {
-    done(null, user._id);
-  });
-
-  passport.deserializeUser((id, done) => {
-    myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
-      done(null, doc);
-    });
-  });
 };

@@ -13,10 +13,21 @@ module.exports = function (app, myDataBase) {
     });
   });
 
-  app.route("/login").post((req, res) => {
-    passport.authenticate("local", { failureRedirect: "/" });
-    res.redirect("/");
-  });
+  // app.route("/login").post((req, res, next) => {
+  //   passport.authenticate("local", {
+  //     failureRedirect: "/",
+  //     successRedirect: "/profile",
+  //   })(req, res, next);
+  //   res.redirect("/");
+  // });
+
+  app.post(
+    "/login",
+    passport.authenticate("local", {
+      successRedirect: "/profile",
+      failureRedirect: "/",
+    })
+  );
 
   function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -32,7 +43,11 @@ module.exports = function (app, myDataBase) {
     res.render("chat", { user: req.user });
   });
   app.route("/logout").get((req, res) => {
-    req.logout();
+    req.logout(function (err) {
+      if (err) {
+        return next(err);
+      }
+    });
     res.redirect("/");
   });
 
