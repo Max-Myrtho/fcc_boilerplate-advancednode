@@ -42,6 +42,7 @@ module.exports = function (app, myDataBase) {
   app.route("/chat").get(ensureAuthenticated, (req, res) => {
     res.render("chat", { user: req.user });
   });
+
   app.route("/logout").get((req, res) => {
     req.logout(function (err) {
       if (err) {
